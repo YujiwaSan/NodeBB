@@ -284,3 +284,27 @@ middleware.checkRequired = function (fields, req, res, next) {
 
 	controllers.helpers.formatApiResponse(400, res, new Error(`[[error:required-parameters-missing, ${missing.join(' ')}]]`));
 };
+
+middleware.proceedOnActivityPub = (req, res, next) => {
+	// For whatever reason, express accepts does not recognize "profile" as a valid differentiator
+	// Therefore, manual header parsing is used here.
+	const { accept } = req.headers;
+	if (!accept) {
+		return next('route');
+	}
+
+	const acceptable = [
+		'application/activity+json',
+		'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+	];
+	const pass = accept.split(',').some((value) => {
+		const parts = value.split(';').map(v => v.trim());
+		return acceptable.includes(value || parts[0]);
+	});
+
+	if (!pass) {
+		return next('route');
+	}
+
+	next();
+};
