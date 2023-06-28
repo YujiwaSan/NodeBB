@@ -101,6 +101,12 @@ Controller.getInbox = async (req, res) => {
 Controller.postInbox = async (req, res) => {
 	console.log('received', req.body);
 
+	switch (req.body.type) {
+		case 'Follow': {
+			await activitypub.local.follow(req.body.actor.name, req.body.object.name);
+		}
+	}
+
 	res.sendStatus(201);
 };
 
